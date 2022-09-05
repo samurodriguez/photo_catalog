@@ -1,24 +1,79 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { useState, useEffect } from "react";
+import { SearchPhotos } from "./pages/SearchPhotos";
+import { MyPhotos } from "./pages/MyPhotos";
 
 function App() {
+  const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
+
+  const [favorites, setFavorites] = useState(storedFavorites);
+  const [showingPage, setShowingPage] = useState("search-photos");
+
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const addToFavorites = (photoToAdd) => {
+    const photoExists = favorites.find((photo) => photo.id === photoToAdd.id);
+
+    if (!photoExists) {
+      setFavorites([...favorites, photoToAdd]);
+    }
+  };
+
+  const removeFromFavorites = (photoToRemove) => {
+    const favoritesFiltered = favorites.filter(
+      (photo) => photo.id !== photoToRemove.id
+    );
+
+    setFavorites(favoritesFiltered);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+    <>
+      <header>
+        <h1>Photo catalog</h1>
+        <nav>
+          <ul>
+            <li>
+              <button
+                onClick={() => {
+                  setShowingPage("my-photos");
+                }}
+                className={showingPage === "my-photos" ? "active" : null}
+              >
+                My photos
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  setShowingPage("search-photos");
+                }}
+                className={showingPage === "search-photos" ? "active" : null}
+              >
+                Search new photos
+              </button>
+            </li>
+          </ul>
+        </nav>
       </header>
-    </div>
+      <main>
+        {showingPage === "search-photos" && (
+          <SearchPhotos addToFavorites={addToFavorites} />
+        )}
+
+        {showingPage === "my-photos" && (
+          <MyPhotos
+            favorites={favorites}
+            removeFromFavorites={removeFromFavorites}
+          />
+        )}
+      </main>
+      <footer>
+        <p>Hack a Boss 2022@</p>
+      </footer>
+    </>
   );
 }
 
